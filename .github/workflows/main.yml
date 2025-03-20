@@ -14,22 +14,21 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Ensure full repo history
-          submodules: true  # Fetch submodules if applicable
+          fetch-depth: 0
 
       - name: Debug - Check Files in Workspace
         run: |
           echo "Current Directory:"
           pwd
-          echo "Listing Files:"
-          ls -R
+          echo "Listing All Files and Directories:"
+          find . -type f
 
       - name: Manually Check for package.json
         run: |
-          if [ -f charts/package.json ]; then
-            echo "package.json exists in charts/!"
-          elif [ -f package.json ]; then
+          if [ -f package.json ]; then
             echo "package.json exists in root!"
+          elif [ -f helm/package.json ]; then
+            echo "package.json exists in helm/"
           else
             echo "package.json is missing!"
             exit 1
@@ -40,15 +39,7 @@ jobs:
         uses: phips28/gh-action-bump-version@master
         env:
           GITHUB_TOKEN: ${{ secrets.PACKAGES_ACCESS_TOKEN }}
-          PACKAGEJSON_DIR: './charts'  # Adjust if your package.json is inside charts/
+          PACKAGEJSON_DIR: './helm'  # Update if needed
         with:
           skip-tag: 'true'
-          commit-message: 'CI: bumps version to {{version}} [skip ci]'
-
-      - name: Push Changes
-        run: |
-          git config --global user.name 'github-actions'
-          git config --global user.email 'github-actions@github.com'
-          git add charts/package.json charts/package-lock.json || echo "No package-lock.json"
-          git commit -m "CI: bumps version [skip ci]" || echo "No changes to commit"
-          git push || echo "No changes to push"
+          commit-message: 'CI: bumps version
