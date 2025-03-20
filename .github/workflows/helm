@@ -1,0 +1,45 @@
+name: Version Bump
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Debug - Check Files in Workspace
+        run: |
+          echo "Current Directory:"
+          pwd
+          echo "Listing All Files and Directories:"
+          find . -type f
+
+      - name: Manually Check for package.json
+        run: |
+          if [ -f package.json ]; then
+            echo "package.json exists in root!"
+          elif [ -f helm/package.json ]; then
+            echo "package.json exists in helm/"
+          else
+            echo "package.json is missing!"
+            exit 1
+          fi
+
+      - name: Automated Version Bump
+        id: version-bump
+        uses: phips28/gh-action-bump-version@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGES_ACCESS_TOKEN }}
+          PACKAGEJSON_DIR: './helm'  # Update if needed
+        with:
+          skip-tag: 'true'
+          commit-message: 'CI: bumps version
